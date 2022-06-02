@@ -1,3 +1,4 @@
+
 <template>
   <div id="app">
     <router-link to="/"></router-link>  
@@ -6,9 +7,9 @@
 </template>
 
 <script>
+/* eslint no-use-before-define: 0 */
 import Vue from 'vue'
 import { BootstrapVue, IconsPlugin, VBHover } from 'bootstrap-vue'
-
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 

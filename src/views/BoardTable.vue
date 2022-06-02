@@ -17,8 +17,10 @@
 
 </template>
 <script>
+/* eslint-disable */
 import NavBar from "../components/layout/NavBar.vue"
 import Footer from "../components/layout/FooterBar.vue"
+
 export default {
     components:{
         NavBar,

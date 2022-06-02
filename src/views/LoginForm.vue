@@ -1,12 +1,13 @@
+
 <template>
 <div>
 <NavBar/>
 <b-container style="margin-top:2rem; margin-bottom:2rem; " fluid="md">
     <b-form>
       
-      <b-form-group id="input-group-2" label="Your Name:" label-for="input-2">
+      <b-form-group id="input-group-1" label="Your Name:" label-for="input-2">
         <b-form-input
-          id="input-2"
+          id="input-1"
           placeholder="Enter Name"
           required
         ></b-form-input>
@@ -29,6 +30,7 @@
 </template>
 
 <script>
+/* eslint-disable */
 import Footer from "../components/layout/FooterBar.vue"
 import NavBar from "../components/layout/NavBar.vue"
   export default {

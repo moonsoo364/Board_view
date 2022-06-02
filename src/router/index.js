@@ -13,12 +13,12 @@ const routes = [
     component: BoardTable,
   },
   {
-    path: "/auth/login",
+    path: "/login",
     name: "login",
     component: LoginForm,
   },
   {
-    path: "/auth/join",
+    path: "/join",
     name: "join",
     component: JoinForm,
   },
