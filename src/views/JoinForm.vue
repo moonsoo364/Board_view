@@ -7,7 +7,8 @@
 
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">User ID</label>
-       <b-button style="margin:0 0 5px 20px;" @click="checkName" variant="warning">중복확인</b-button>
+      <b-button style="margin:0 0 5px 20px;" variant="success" @click="checkName" :class="{isSelected: checker === false}">중복확인</b-button>
+      <span></span>
       <b-form-input v-model="username_data" :state="checkUserId" id="feedback-user"></b-form-input>
       
       <b-form-invalid-feedback :state="checkUserId">
@@ -69,6 +70,7 @@ import axios from 'axios'
         password_data:"",
         password_check:"",
         email_data:"",
+        checker:false,
 
       }
     },
@@ -110,12 +112,14 @@ import axios from 'axios'
       }
     },
     methods:{
-      //200일 때만 then을 실행
       
       fetchData: function(){
         const router=this.$router;
-      if(this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
-        axios.post('/api/auth/joinProc',{
+        console.log(this);
+      if(!this.checker){
+        alert('중복 확인을 해주세요!')
+      }else if(this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
+        axios.post('/api/joinProc',{
           username:this.username_data,
           password:this.password_data,
           email:this.email_data,
@@ -133,19 +137,24 @@ import axios from 'axios'
    
           })
       }else{
-        alert("유효한 회원 정보를 입력하십시오!")
+        alert("유효한 정보를 입력하세요!")
       }
     },
     checkName: function(){
+
+
       if(this.checkUserId){
-        axios.post('api/auth/checkName',{
+        const instance =this
+        axios.post('api/checkName',{
           username:this.username_data
         }).then(function(res){
           
-           alert("사용가능한 아이디입니다.")
+          alert("사용가능한 아이디입니다.");
           console.log(res);
+          instance.checker=true;
         }).catch((e)=>{
           console.log(e);
+
           alert("아이디가 중복 되었습니다.")
         })
 
@@ -158,3 +167,9 @@ import axios from 'axios'
   }
   
 </script>
+<style scoped>
+  .isSelected{
+    background: rgba(255, 26, 10, 0.753);
+    color: #fff
+  }
+</style>

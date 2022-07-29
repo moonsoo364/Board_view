@@ -8,8 +8,14 @@ import CreateBoard from "@/views/CreateBoard.vue"
 import DetailBoard from "@/views/DetailBoard.vue"
 import HelloWorld from "@/views/HelloWorld.vue"
 
+
 import Vue from"vue";
+
+
+
 Vue.use(VueRouter);
+
+
 
 const routes = [
   {
@@ -19,7 +25,8 @@ const routes = [
       header: NavBar,
       contents: BoardTable,
       footer: FooterBar,
-    }
+    },
+   
 
   },
   {
@@ -47,10 +54,20 @@ const routes = [
       header: NavBar,
       contents: CreateBoard,
       footer: FooterBar,
+    },
+    beforeEnter: (to,from,next)=>{
+      if(localStorage.getItem('user')!=null){
+        next();  
+      }else{
+       
+        alert("접근 권한이 없습니다.")
+        next('/');
+      }
     }
+ 
   },
   {
-    path: "/detail",
+    path: "/detail/:id",
     name: "detail",
    components: {
       header: NavBar,
@@ -59,14 +76,18 @@ const routes = [
     }
   },
   {
-    path: "/hello",
-    name: "hello",
+    path: "/test/:id",
+    name: "test",
    components: {
       header: NavBar,
       contents: HelloWorld,
       footer: FooterBar,
     }
   },
+ 
+
+    
+  
 
 ];
 
@@ -75,5 +96,7 @@ const router = new VueRouter({
   base: process.env.BASE_URL,
   routes,
 });
+
+
 
 export default router;

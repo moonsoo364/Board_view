@@ -1,12 +1,11 @@
 
 <template>
 <div>
-<NavBar/>
 <b-container style="margin-top:2rem; margin-bottom:2rem; " fluid="md">
     <b-form>
       <h3 style="text-align:center;">로그인 페이지입니다!</h3>
       <b-form  @submit.stop.prevent>
-      <label for="feedback-user">User ID</label>
+      <label >User ID</label>
       <b-form-input v-model="username_data" :state="checkUserId" id="feedback-user"></b-form-input>
       <b-form-invalid-feedback :state="checkUserId">
         사용자 ID는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
@@ -17,8 +16,8 @@
      </b-form>
 
       <b-form  @submit.stop.prevent>
-      <label for="feedback-user">비밀번호</label>
-      <b-form-input v-model="password_data" :state="checkUserPw" id="feedback-user"></b-form-input>
+      <label >비밀번호</label>
+      <b-form-input type="password" v-model="password_data" :state="checkUserPw" id="feedback-user"></b-form-input>
       <b-form-invalid-feedback :state="checkUserPw">
         비밀번호는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
       </b-form-invalid-feedback>
@@ -44,6 +43,7 @@ import axios from 'axios'
         password_data:""
       }
     },
+   
     computed:{
        checkUserId(){
 
@@ -64,27 +64,49 @@ import axios from 'axios'
           }
         }
         return false
-      }
-
+      },
     },
     
     methods: {
+     
      fetchData: function(){
+      const router=this.$router;
+      console.log(this.$store);
         if(this.checkUserId&&this.checkUserPw){
-          axios.post('api/auth/login',{
+          axios.post('api/existUser',{
             username:this.username_data,
             password:this.password_data
           }).then((res)=>{
-            console.log(res);
-            alert("로그인 성공!");
+          alert("로그인 성공!");
+           router.push('/');
+
+          this.$store.dispatch('asyncToken',{
+            username:this.username_data,
+            token:res.headers.authorization_header,
+            expiredTime:res.data.expiredTime
+          }),
+          this.$store.commit('setAuthentication');
+
+          console.log("dispatch");
             
+          }).catch(err=>{
+             console.log(err);
+            if(err.response.data.code==1){
+             
+              alert("비밀번호가 일치하지 않습니다!")
+            }else if(err.response.data.code==2){
+              
+              alert("존재하지 않는 아이디 입니다!")
+            }
+
           })
         }else{
-          alert("로그인 실패!")
-            console.log(e);
+          alert("유효한 값을 입력하세요!")
+           
         }
 
-      }
+      },
+      
       },
       
     }

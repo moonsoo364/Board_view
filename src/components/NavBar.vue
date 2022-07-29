@@ -4,43 +4,100 @@
 <b-navbar toggleable="lg" type="dark" variant="info">
     
     
-    <router-link to="/" style="text-decoration:none;"><b-navbar-brand>Home</b-navbar-brand></router-link>
+    <router-link to="/" style="text-decoration:none; margin-left: 5px;"><b-navbar-brand>Home</b-navbar-brand></router-link>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-    <b-collapse v-if="login_state" id="nav-collapse" is-nav>
-      <b-navbar-nav>
-        <b-nav-item>글쓰기</b-nav-item>
-        <b-nav-item>로그아웃</b-nav-item>
+    <b-collapse v-if="this.$store.state.isLogin" id="nav-collapse" is-nav>
+       <b-navbar-nav>
+        <router-link to="/create"><span class="nav-link">글쓰기</span></router-link>
       </b-navbar-nav>
+      <b-navbar-nav>
+        <b-nav-item class="nav-link" @click="doLogout">로그아웃</b-nav-item>
+      </b-navbar-nav>
+     
+       
+          <b-avatar style="color:rgba(255, 255, 255,0.8)"></b-avatar>
+          <span style="color:rgba(255, 255, 255,0.8)">{{getUsername}}님 반갑습니다!</span>
+     
     </b-collapse>
 
     <b-collapse v-else id="nav-collapse"  is-nav>
       <b-navbar-nav>
-        <b-nav-item >
-          <router-link to="/login" class="active">로그인</router-link>
-        </b-nav-item>
-        <b-nav-item >
-          <router-link to="/join" class="active">회원가입</router-link>
-        </b-nav-item>
-        <b-nav-item >
-          <router-link to="/hello" class="active">Parent</router-link>
+        <b-nav-item v-for="item in navbars" :key="item.id">
+          <router-link :to="{path:item.router}" class="active">{{item.menu}}</router-link>
         </b-nav-item>
       </b-navbar-nav>
     </b-collapse>
-
+    
 </b-navbar>
 
 </div>
 </template>
 <script>
+import axios from 'axios'
+
 
 export default {
-  name:"NavBar",
+  name:"NavBar", 
+  updated(){
+    if(localStorage.getItem('user')==null){
+      return this.loginState =false
+    }else{
+      return this.loginState=true
+    }
+  },
+  
+ mounted(){
+
+        const store =this.$store;
+        if(localStorage.getItem('user')!=null){
+         axios.post('/api/auth/expiredCheckToken',{
+        token:JSON.parse(localStorage.getItem('user')).token
+        })
+        .then(function(res){
+          console.log(res);
+          store.dispatch('asyncStorage',{
+            expiredTime:res.data.restedTime,
+            expired:res.data.validated
+          });
+        })
+        .catch(function(err){
+           console.log(err);         
+        })
+        }
+
+    
+ },
+ 
+  computed:{
+    
+    loginState(){
+    
+      return this.$store.getters.getLoginState;
+    },
+    matchUser(){
+      return this.$store.getters.matchUser;
+    },
+    getUsername(){
+      return this.$store.getters.getUsername;
+    }
+  },
       data(){
             return{
-                login_state:false,
-                hover:false
+                hover:false,
+                compute:0,
+                navbars:[
+                  {menu: '로그인', router:'/login',id:1},
+                  {menu: '회원가입', router:'/join',id:2},
+                ],
+               
             }
-        }
+        },
+      methods:{
+       
+        doLogout:function(){
+          this.$store.commit('logout')
+        },
+      }
 }
 </script>
 <style scoped>
@@ -53,6 +110,8 @@ a{
 }
 .navbar-brand, .nav-link{
   font-size: 1.5rem;
-  margin: 0 10px 0 10px;
+
 }
+
+
 </style>
