@@ -6,18 +6,18 @@
     
     <router-link to="/" style="text-decoration:none; margin-left: 5px;"><b-navbar-brand>Home</b-navbar-brand></router-link>
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
-    <b-collapse v-if="this.$store.state.isLogin" id="nav-collapse" is-nav>
+    <b-collapse v-if="loginState" id="nav-collapse" is-nav>
        <b-navbar-nav>
         <router-link to="/create"><span class="nav-link">글쓰기</span></router-link>
       </b-navbar-nav>
       <b-navbar-nav>
         <b-nav-item class="nav-link" @click="doLogout">로그아웃</b-nav-item>
       </b-navbar-nav>
-     
-       
+      <b-navbar-nav v-if="getAdmin">
+        <router-link to="/userinfo"><span class="nav-link">관리자</span></router-link>
+      </b-navbar-nav>
           <b-avatar style="color:rgba(255, 255, 255,0.8)"></b-avatar>
           <span style="color:rgba(255, 255, 255,0.8)">{{getUsername}}님 반갑습니다!</span>
-     
     </b-collapse>
 
     <b-collapse v-else id="nav-collapse"  is-nav>
@@ -34,48 +34,41 @@
 </template>
 <script>
 import axios from 'axios'
+import { mapGetters } from 'vuex';
 
 
 export default {
   name:"NavBar", 
-  updated(){
-    if(localStorage.getItem('user')==null){
-      return this.loginState =false
-    }else{
-      return this.loginState=true
-    }
-  },
+
   
  mounted(){
-
-        const store =this.$store;
-        if(localStorage.getItem('user')!=null){
-         axios.post('/api/auth/expiredCheckToken',{
-        token:JSON.parse(localStorage.getItem('user')).token
-        })
-        .then(function(res){
-          console.log(res);
-          store.dispatch('asyncStorage',{
-            expiredTime:res.data.restedTime,
-            expired:res.data.validated
-          });
-        })
-        .catch(function(err){
-           console.log(err);         
-        })
-        }
+    
+    const store =this.$store;
+    if(localStorage.getItem('user')!=null){
+    const token =JSON.parse(localStorage.getItem('user')).token
+    const instance =axios.create({
+      headers:{Authorization:token}
+    })
+    instance.post("/api/auth/expiredCheckToken")
+    .then(function(res){
+      console.log(res);
+      store.dispatch('asyncStorage',{
+        expiredTime:res.data.restedTime,
+        expired:res.data.validated
+      });
+    })
+    .catch(function(err){
+       console.log(err);         
+    })
+    }
 
     
  },
  
   computed:{
-    
+    ...mapGetters(['getAdmin']),
     loginState(){
-    
       return this.$store.getters.getLoginState;
-    },
-    matchUser(){
-      return this.$store.getters.matchUser;
     },
     getUsername(){
       return this.$store.getters.getUsername;

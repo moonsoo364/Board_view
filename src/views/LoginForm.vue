@@ -73,22 +73,20 @@ import axios from 'axios'
       const router=this.$router;
       console.log(this.$store);
         if(this.checkUserId&&this.checkUserPw){
-          axios.post('api/existUser',{
+          axios.post('api/noAuth/existUser',{
             username:this.username_data,
             password:this.password_data
           }).then((res)=>{
+            console.log(res.data);
           alert("로그인 성공!");
            router.push('/');
 
           this.$store.dispatch('asyncToken',{
             username:this.username_data,
-            token:res.headers.authorization_header,
-            expiredTime:res.data.expiredTime
-          }),
-          this.$store.commit('setAuthentication');
-
-          console.log("dispatch");
-            
+            token:res.headers.authorization,
+            expiredTime:res.data.expiredTime,
+            admin:res.data.admin
+          })   
           }).catch(err=>{
              console.log(err);
             if(err.response.data.code==1){

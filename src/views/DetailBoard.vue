@@ -1,25 +1,22 @@
 <template>
   <div>
     <b-container fluid="md" style="margin-top:2rem; margin-bottom:2rem;">
-        <h3 style="text-align:center;">상세보기 페이지입니다!</h3>
-        <div v-if="compareUser">
-              <router-link to="/" tag="button" class="createCommit">글수정</router-link> 
-              <router-link to="/" tag="button" class="delete">삭제</router-link>
-              <router-link to="/" tag="button" class="list">목록</router-link>
-        </div>
-        <div v-else>
-           <router-link to="/" tag="button" class="list">목록</router-link>
-        </div>
+      <h3 style="text-align:center;">{{getBoardData.id}}번째 글: {{getBoardData.title}}</h3>
+      <div v-if="getBoardData.correctUser">
+            <router-link :to="{name:'update', params:{id : getBoardData.id}}" tag="button" class="createCommit">글수정</router-link> 
+            <button class="delete" @click="deleteData">삭제</button>
+            <router-link to="/" tag="button" class="table">목록</router-link>
+      </div>
+      <div v-else>
+         <router-link to="/" tag="button" class="table">목록</router-link>
+      </div>
+      <div>작성자 : {{getBoardData.username}}<hr/> </div>
        
-
-        <div>작성자 :{{getBoardUser}}</div>
-        <hr/>
-       <div>
-         게시글 내용
-       </div>
+      <div> {{getBoardData.content}} </div>
        
+         
+     
 
-    <pre class="mt-3 mb-0">{{ text }}</pre>
     <div>
         
     </div>
@@ -29,28 +26,78 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
     export default {
       
       mounted(){
-        
-        const number = this.$route.params.id;
-        console.log(number);
-        axios.post('api/auth/selectWriting',{
-          num:number
-        }).then((res)=>{
-          console.log(res);
-        }).catch((err)=>{
-          console.log(err);
-        })
+       const store =this.$store;
+       const param=this.$route.params.id;
+       let ls=JSON.parse(localStorage.getItem('board')).length;
+       let boardLength=store.state.detailBoardList.length;
+       console.log("BoardData : "+store.state.BoardData);
+        if(localStorage.getItem('user') ==null){
+          alert("접근권한 없음")
+        } else if((store.state.detailBoardList.length==0)||(boardLength<ls)||(store.state.isUpdateBoard)||(store.state.isDeleteBoard)){ 
+            //경우1 : 처음 상세보기 클릭했을 때 경우2: 글이 등록되서 새로운글 표시할떄 경우3 글이 업데이트 되었을때 경우4 삭제되었을 때
+            const token=JSON.parse(localStorage.getItem('user')).token
+            const instance =axios.create({
+              headers:{Authorization:token}
+            })
+
+          instance.post('/api/auth/selectAll',{})
+          .then((res)=>{
+            console.log(res);
+            store.commit('selectBoardList',res.data);
+            // 8/2 id값으로 게시물 찾고 넣기
+            store.commit('getDetailBoard',param);
+            store.state.isUpdateBoard=false;
+            store.state.isDeleteBoard=false;
+            console.log("done : "+store.state.isUpdateBoard);
+          }).catch((err)=>{
+            console.log(err);
+          })
+        }
+        else{
+          store.commit('setDetailBoard',param);
+        } 
       },
         computed:{
-          getBoardUser(){
-            return this.$store.getters.getBoarduser;
-          },
-          compareUser(){
-            return this.$store.getters.compareUser;
-          }
+          ...mapGetters(['getBoardData','getLoginState']),
+     
+        },
+ 
+        methods:{
+         deleteData(){
+            const router = this.$router;
+            const token =JSON.parse(localStorage.getItem('user')).token
+            const boardData =this.getBoardData;
+            const store =this.$store;
+            console.log(boardData);
+            const instance =axios.create({
+                headers:{Authorization:token}
+            })
+            if(!boardData.correctUser){
+                 alert('작성자와 일치하지 않습니다!')
+                 router.push("/");
+           }else{
+            if(confirm('정말 게시글을 삭제하시겠습니까?')){
+            instance.post('/api/auth/deleteBoard',{
+                id:boardData.id
+            }).then(function(res){
+                console.log(res);
+                store.state.isDeleteBoard=true;
+                router.push('/');
+                alert("게시글이 삭제되었습니다!");
+            }).catch((e)=>{
+                console.log(e);
+                alert("게시물 삭제 불가!")
+            })
+            }
+           }
+           
+           
+        },
         }
     }
 </script>
@@ -65,10 +112,10 @@ import axios from 'axios';
     
     border-radius: 5px;
 }
-.list{
+.table{
     width: 80px;
     height: 30px;
-    background: rgba(1, 60, 255, 0.582);
+    background: rgba(7, 60, 231, 0.582);
     color: white;
     border: none;
     

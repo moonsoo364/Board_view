@@ -4,7 +4,7 @@
 <b-container style="margin-top:2rem; margin-bottom:2rem; " fluid="md">
     <b-form>
       <h3 style="text-align:center;">회원가입 페이지입니다!</h3>
-
+      
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">User ID</label>
       <b-button style="margin:0 0 5px 20px;" variant="success" @click="checkName" :class="{isSelected: checker === false}">중복확인</b-button>
@@ -29,7 +29,6 @@
         유효한 비밀번호 입니다.
       </b-form-valid-feedback>
      </b-form>
-
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">비밀번호 확인</label>
       <b-form-input type="password" v-model="password_check" :state="reCheckPW" id="feedback-user"></b-form-input>
@@ -51,7 +50,10 @@
         유효한 이메일 입니다.
       </b-form-valid-feedback>
      </b-form>
-     
+      
+    <b-form-select size="sm" v-model="selected" :options="options"></b-form-select>   
+    <div v-if="selected" class="mb-3" style="font-size: 0.875em;">선택한 계정: <strong>{{ selected }}</strong></div>
+    <div v-else class="mb-3" style="font-size: 0.875em;"><span style="color:#dc3545;">계정을 선택 해주세요!</span></div>
     </b-form>
      <b-button @click="fetchData" variant="primary">Submit</b-button>
 </b-container>
@@ -71,6 +73,12 @@ import axios from 'axios'
         password_check:"",
         email_data:"",
         checker:false,
+        selected: null,
+        options: [
+          { value: 'ADMIN', text: 'Admin' },
+          { value: 'USER', text: 'User' },
+
+        ]
 
       }
     },
@@ -118,11 +126,12 @@ import axios from 'axios'
         console.log(this);
       if(!this.checker){
         alert('중복 확인을 해주세요!')
-      }else if(this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
-        axios.post('/api/joinProc',{
+      }else if(this.selected&&this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
+        axios.post('/api/noAuth/joinProc',{
           username:this.username_data,
           password:this.password_data,
           email:this.email_data,
+          roles:this.selected
           
         }).then(function(res){
 
@@ -145,7 +154,7 @@ import axios from 'axios'
 
       if(this.checkUserId){
         const instance =this
-        axios.post('api/checkName',{
+        axios.post('api/noAuth/checkName',{
           username:this.username_data
         }).then(function(res){
           

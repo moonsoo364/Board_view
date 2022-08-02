@@ -1,22 +1,23 @@
 <template>
   <div>
     <b-container fluid="md" style="margin-top:2rem; margin-bottom:2rem;">
-        <h3 style="text-align:center;">게시글작성 페이지입니다!</h3>
+        <h3 style="text-align:center;">게시글 수정 페이지 입니다.</h3>
         <div>작성자 <input type="text" v-model="getUsername" disabled></div>
+        <div>글번호 <input type="text" v-model="getBoardData.id" disabled></div>
     <b-input-group prepend="제목" class="mt-3">
-        <b-form-input v-model="title"> </b-form-input>
+        <b-form-input v-model="title_data"> </b-form-input>
     </b-input-group>
          <b-form-textarea
       id="textarea"
-      v-model="content"
+      v-model="content_data"
       placeholder="Enter something..."
       rows="3"
       max-rows="6"
     ></b-form-textarea>
 
     <div>
-        <button class="createCommit" @click="fetchData">글등록</button>
-        <router-link to="/" tag="button" class="list">목록</router-link>
+        <button class="createCommit" @click="UpdateData">글등록</button>
+        <router-link :to="{name:'detail', params:{id:getBoardData.id}}" tag="button" class="list">목록</router-link>
     </div>
     </b-container>
   </div>
@@ -24,65 +25,67 @@
 
 <script>
 import axios from 'axios'
+import { mapGetters } from 'vuex'
 
 
     export default {
-        data(){
-            return{
-                content:'',
-                title:'',
 
-            }
-        },
-         updated(){
-            if(this.getUsername==''){
-                alert("게시글 접근 불가!")
-                this.$router.push('/')
-            }
-         },
+
         computed:{
-            getUsername(){
-            return this.$store.getters.getUsername;      
-            },
+         ...mapGetters([
+        'getBoardData','getUsername'
+        ]), 
+       
+        },
+         data(){
+            return{
+                title_data:"",
+                content_data:"",
 
-            
+            }
         },
         methods:{
-           fetchData(){
+           UpdateData(){
             const router = this.$router;
+            const store =this.$store;
             const token =JSON.parse(localStorage.getItem('user')).token
-            console.log(token);
+            const boardData =this.getBoardData
             const instance =axios.create({
                 headers:{Authorization:token}
             })
-            if((this.title=='')){
+            if((this.title_data=='')){
                  alert('제목이 비었습니다!')
                
-            }else if(this.content==''){
+            }else if(this.content_data==''){
                 alert('게시글 내용이 없습니다!')
             }else{
-                instance.post('api/auth/insertBoard',{
-                    content:this.content,
-                    title:this.title,
+                instance.post('/api/auth/updateBoard',{
+                    content: this.content_data,
+                    title: this.title_data,
+                    id:boardData.id
                 }).then(function(res){
                     console.log(res);
-                    router.push('/');
-                    alert("게시글이 등록되었습니다!");
+                    router.push("/");
+                    store.state.isUpdateBoard =true;
+                    alert("게시글이 수정되었습니다!");
+
+                    router.push("/");
                 }).catch((e)=>{
                     console.log(e);
-                    alert("403: 로그인 토큰 인증이 필요합니다.")
+                    alert("게시물 수정 불가!")
                 })
             }
            
            
-        }
+        },
+       
+
         
     }
     }
 </script>
 
-<style scoped>
-
+<style>
 .createCommit{
     width: 80px;
     height: 30px;

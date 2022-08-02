@@ -8,6 +8,7 @@ module.exports = defineConfig({
         target,
         changeOrigin: true//cross origin 허용
       },
+      
     }
   }
   

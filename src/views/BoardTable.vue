@@ -6,7 +6,7 @@
             <div v-if="getBoardList">
                 <h3 style="text-align:center;">게시판 페이지입니다!</h3>
                 <b-card-group deck>
-                    <b-card  :title="board.title" v-for="board in getBoardList" :key="board.id">
+                    <b-card    :title="board.title" v-for="board in getBoardList" :key="board.id">
                         <router-link :to="{name:'detail', params:{id:board.id}}" tag="button" class="detailBoard">글보기</router-link>
                         <!-- <b-button @click="showWriting" variant="outline-success">글보기</b-button> -->
                     </b-card>  
@@ -40,6 +40,7 @@ name:"BoardTable",
 computed:{
     ...mapGetters(['getBoardList','getNext','getPre']), 
    LoginState(){
+    //로그인 되면 글 등록 버튼 보임
     return this.$store.getters.getLoginState;
    }
 },
@@ -48,14 +49,17 @@ const store =this.$store;
 store.state.visiablePre=false;
 store.state.maxPage=3;
 
-axios.post("api/auth/getBoard",{
+axios.post("api/noAuth/getBoard",{
 
 }).then(function(res){
+    console.log(res);
     store.commit('commitBoardList',res.data);
 
 }).catch(function(err){
     console.log(err);
+    
 })
+
 },
 
 
@@ -67,15 +71,7 @@ methods:{
       
       return this.$store.commit('decrease');
     },
-    increase:function(){
-        return this.$store.commit('increase');
-    },
-    showWriting:function(){
-        
-        this.$router.push({name:'detail',params:{id:1}});
-        
-        // this.$router.push({path:'/detail'});
-    }
+
 },
 
 
