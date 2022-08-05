@@ -13,9 +13,6 @@
       <div>작성자 : {{getBoardData.username}}<hr/> </div>
        
       <div> {{getBoardData.content}} </div>
-       
-         
-     
 
     <div>
         
@@ -33,35 +30,29 @@ import { mapGetters } from 'vuex';
       mounted(){
        const store =this.$store;
        const param=this.$route.params.id;
-       let ls=JSON.parse(localStorage.getItem('board')).length;
-       let boardLength=store.state.detailBoardList.length;
-       console.log("BoardData : "+store.state.BoardData);
+       const token=  JSON.parse(localStorage.getItem('user')).token 
+       const instance =axios.create({
+         headers:{Authorization:token}
+       })
+      console.log(store);
         if(localStorage.getItem('user') ==null){
           alert("접근권한 없음")
-        } else if((store.state.detailBoardList.length==0)||(boardLength<ls)||(store.state.isUpdateBoard)||(store.state.isDeleteBoard)){ 
-            //경우1 : 처음 상세보기 클릭했을 때 경우2: 글이 등록되서 새로운글 표시할떄 경우3 글이 업데이트 되었을때 경우4 삭제되었을 때
-            const token=JSON.parse(localStorage.getItem('user')).token
-            const instance =axios.create({
-              headers:{Authorization:token}
-            })
-
-          instance.post('/api/auth/selectAll',{})
+        }else{
+          instance
+          .post("/api/auth/boardDetail",{id:param})
           .then((res)=>{
-            console.log(res);
-            store.commit('selectBoardList',res.data);
-            // 8/2 id값으로 게시물 찾고 넣기
-            store.commit('getDetailBoard',param);
-            store.state.isUpdateBoard=false;
-            store.state.isDeleteBoard=false;
-            console.log("done : "+store.state.isUpdateBoard);
-          }).catch((err)=>{
-            console.log(err);
+            console.log(res.data);
+            store.commit('selectByBoardId',res.data)
+      
           })
-        }
-        else{
-          store.commit('setDetailBoard',param);
+          .catch((err)=>{console.log(err);})
         } 
       },
+        data(){
+          return{
+
+          }
+        },
         computed:{
           ...mapGetters(['getBoardData','getLoginState']),
      

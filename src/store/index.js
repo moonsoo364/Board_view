@@ -3,10 +3,12 @@
 import Vue from 'vue'
 import router from '../router';
 import Vuex from 'vuex'
+import moment from 'moment'
 
 Vue.use(Vuex)
 export default new Vuex.Store({
-  state: {
+  // 모듈
+  state: {//store.state.dash
     //isAdmin userData에 담기
     userData: {token:'',username:'',expiredTime:0,isAdmin:false},//로그인 할때 ls저장
     counter:0,
@@ -17,9 +19,10 @@ export default new Vuex.Store({
     visiableNext:true,
     visiablePre:false,
     BoardData:{title:'',content:'',username:'',correctUser:false,id:0},
-    detailBoardList:[],
     isUpdateBoard:false,
-    isDeleteBoard:false
+    isDeleteBoard:false,
+    userList:[],
+    writingList:[],
 
    
 
@@ -71,22 +74,29 @@ export default new Vuex.Store({
     getAdmin:function(state){
       return state.userData.isAdmin;
     }
-  
+    ,
+    getUserList:function(state){
+      return state.userList;
+    },
+    getWritingList:function(state){
+      return state.writingList;
+    }
   },
   mutations:{
 
     
     setUserData:function(state,payload){
       //로그인 후 동작 *LoginForm
+      localStorage.removeItem('user');
+      console.log("localStorage.getItem('user') :"+localStorage.getItem('user'));
       state.userData.username=payload.username;
       state.userData.token=payload.token;
       state.userData.expiredTime=payload.expiredTime;
       state.userData.isAdmin=payload.admin;
-      console.log("setuser : "+state.isAdmin);
       state.isLogin=true// *NavBar 로그인 상태 토클
 
-      console.log("state.userData.expiredTime"+state.userData.expiredTime);
       localStorage.setItem('user',JSON.stringify(state.userData));
+      console.log(localStorage.getItem('user'));
     },
     logout:function(state){
       // *LoginForm, *NavBar
@@ -101,8 +111,7 @@ export default new Vuex.Store({
 
       alert("로그아웃 되었습니다!")
       router.push('/')
-      
-      
+       
     },
     getStorage:function(state,payload){
      
@@ -113,7 +122,6 @@ export default new Vuex.Store({
       state.userData.isAdmin=JSON.parse(localStorage.getItem('user')).isAdmin;
       state.isLogin=true
       console.log("state.userData.username : "+state.userData.username);
-      console.log("state.userData.expiredTime : "+state.userData.expiredTime);
       localStorage.setItem('user',JSON.stringify(state.userData));
 
       
@@ -128,7 +136,6 @@ export default new Vuex.Store({
       let arr =[]
       state.maxPage=3;
       state.visiableNext=true;
-      console.log("payload.length : "+payload.length);
       if(payload.length<=2){
          for(let i=0;i<payload.length;i++){
           arr.push(payload[i])
@@ -194,45 +201,41 @@ export default new Vuex.Store({
       // console.log(arr);
     },
     selectByBoardId:function(state,payload){
-      state.BoardData={}
-      state.BoardData.content=payload.content;
-      state.BoardData.title=payload.title;
-      state.BoardData.username=payload.username;
-      state.BoardData.correctUser=payload.correctUser;
-      state.BoardData.id=payload.id;
+      state.BoardData=payload
+      console.log(state.BoardData);
 
     },
-    selectBoardList:function(state,payload){
-      state.detailBoardList=payload;
-      console.log(state.detailBoardList);
+    setUserList:function(state,payload){
+      console.log(payload[0].id);
+      state.userList=[];
+      for(let i=0;i<payload.length;i++){
+        state.userList.push({
+          id : payload[i].id,
+          username :payload[i].username,
+          email : payload[i].email,
+          //new Data()
+          date : moment(payload[i].createDate).format("yyyy/MM/DD h:mm:ss a"),
+          roles: payload[i].roles,
+        })
+      }
+      console.log(state.userList);
     },
-    setDetailBoard:function(state,payload){
-      console.log(payload);
+    selectWritingList:function(state,payload){
+      state.writingList=payload;
+      state.writingList=[];
+      for(let i=0;i<payload.length;i++){
+        state.writingList.push({
+        id : payload[i].id,
+        title : payload[i].title,
+        content : payload[i].content,
+        date : moment(payload[i].createTime).format("yyyy/MM/DD h:mm:ss a"),
+        username : payload[i].username, 
+      })
+      }
       
-      for(let i=0;i<state.detailBoardList.length;i++){
-        if(state.detailBoardList[i].id==payload){
-          state.BoardData=state.detailBoardList[i]
-          break;
-        }
-      }
-      console.log(state.BoardData);
+      console.log(state.writingList);
     },
-    getDetailBoard:function(state,payload){
-      //router에서 받은 params값으로 게시물 찾는 과정
-      for(let i=0;i<state.detailBoardList.length;i++){
-        if(state.detailBoardList[i].id==payload){
-          state.BoardData=state.detailBoardList[i]
-          break;
-        }
-      }
-      //현재 로그인 된 계정과 작성자를 비교
-      const username=JSON.parse(localStorage.getItem('user')).username;
-      if(username==state.BoardData.username){
-        state.BoardData.correctUser=true;
-      }else{
-        state.BoardData.correctUser=false;
-      }
-    }
+    
     },
     
    
@@ -240,6 +243,7 @@ export default new Vuex.Store({
   actions:{
     asyncToken: function(state,payload){
       // 시간이 지나면 로그아웃 *LoginForm
+
       state.commit('setUserData',{
         username:payload.username,
         token:payload.token,
@@ -249,7 +253,7 @@ export default new Vuex.Store({
       setTimeout(function(){state.commit('logout')},payload.expiredTime);
     },
     asyncStorage:function(state,payload){
-      console.log(payload)
+      console.log(payload);
       if(payload.expired){
         state.commit('getStorage',payload.expiredTime)
       }else {

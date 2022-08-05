@@ -51,14 +51,14 @@ export default {
     })
     instance.post("/api/auth/expiredCheckToken")
     .then(function(res){
-      console.log(res);
       store.dispatch('asyncStorage',{
         expiredTime:res.data.restedTime,
         expired:res.data.validated
       });
     })
     .catch(function(err){
-       console.log(err);         
+       console.log(err);
+       store.commit('logout');         
     })
     }
 

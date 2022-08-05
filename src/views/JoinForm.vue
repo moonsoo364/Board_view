@@ -7,9 +7,9 @@
       
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">User ID</label>
-      <b-button style="margin:0 0 5px 20px;" variant="success" @click="checkName" :class="{isSelected: checker === false}">중복확인</b-button>
-      <span></span>
-      <b-form-input v-model="username_data" :state="checkUserId" id="feedback-user"></b-form-input>
+      <button style="margin:0 0 0 1rem;" variant="success" @click="checkName" :class="[checker ? 'btn btn-outline-success':'btn btn-outline-danger']">중복확인</button>
+      <button v-if="checker" @click="inverseCheker" class="btn btn-outline-warning">ID수정</button>
+      <b-form-input  :disabled="checker" v-model="username_data" :state="checkUserId" id="feedback-user"></b-form-input>
       
       <b-form-invalid-feedback :state="checkUserId">
         사용자 ID는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
@@ -86,7 +86,7 @@ import axios from 'axios'
       checkUserId(){
 
         if(this.username_data !== undefined){
-          const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,30}$/;
+          const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,12}$/;
           if (this.username_data.match(reg)){
             return true;
           }
@@ -96,7 +96,7 @@ import axios from 'axios'
       checkUserPw(){
 
         if(this.password_data !== undefined){
-          const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,30}$/;
+          const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,12}$/;
           if (this.password_data.match(reg)){
             return true;
           }
@@ -105,8 +105,9 @@ import axios from 'axios'
       },
       checkUserEm(){
         //eslint-disable-next-line no-useless-escape
-        // .이 무조건 와야하며 .co .com .kr 2~3글자 제한
-       const reg =/^[a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+        //(\.){1}([A-z]){2,3}(\.)?(?(5)[A-z]{1,3}|\b)
+       const reg=/^([A-z1-9]){6,12}@([A-z]){3,8}(\.){1}([A-z]){2,3}(\.)?((5)?[A-z]{1,3}|\b)$/;
+
        if(this.email_data.match(reg)){
         return true;
        }
@@ -151,7 +152,6 @@ import axios from 'axios'
     },
     checkName: function(){
 
-
       if(this.checkUserId){
         const instance =this
         axios.post('api/noAuth/checkName',{
@@ -171,14 +171,14 @@ import axios from 'axios'
         alert("아이디를 먼저 입력하세요!")
       }
 
+    },
+    inverseCheker:function(){
+      this.checker =!this.checker;
     }
   }
   }
   
 </script>
 <style scoped>
-  .isSelected{
-    background: rgba(255, 26, 10, 0.753);
-    color: #fff
-  }
+
 </style>

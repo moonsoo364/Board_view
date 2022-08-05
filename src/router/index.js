@@ -8,10 +8,12 @@ import CreateBoard from "@/views/CreateBoard.vue"
 import DetailBoard from "@/views/DetailBoard.vue"
 import UpdateBoard from "@/views/UpdateBoard.vue"
 import UserInfo from "@/views/UserInfo.vue";
+import TabContainer from"@/example/TabContainer.vue"
+import UpdateUserVue from "@/views/UpdateUser.vue";
+import WritingUserVue from "@/views/WritingUser.vue";
 
 
 import Vue from"vue";
-import store from "@/store";
 
 
 
@@ -95,11 +97,12 @@ const routes = [
       footer: FooterBar,
     },
     beforeEnter: (to,from,next)=>{
-      if(store.state.userData.isAdmin==true){
+      if(localStorage.getItem('user')!=null){
         next();  
       }else{
-        alert("관리자 권한이 없습니다")
-        next('/');
+       
+        alert("접근 권한이 없습니다, 로그인을 해주세요")
+        next('/login');
       }
     }
   },
@@ -120,6 +123,60 @@ const routes = [
         next('/login');
       }
     }
+},
+{
+  path: "/test",
+  name: "test",
+ components: {
+    header: NavBar,
+    contents: TabContainer,
+    footer: FooterBar,
+  },
+  beforeEnter: (to,from,next)=>{
+    if(localStorage.getItem('user')!=null){
+      next();  
+    }else{
+     
+      alert("접근 권한이 없습니다, 로그인을 해주세요")
+      next('/login');
+    }
+  }
+},
+{
+  path: "/updateUser/:id/:name",
+  name: "updateUser",
+ components: {
+    header: NavBar,
+    contents: UpdateUserVue,
+    footer: FooterBar,
+  },
+  beforeEnter: (to,from,next)=>{
+    if(localStorage.getItem('user')!=null){
+      next();  
+    }else{
+     
+      alert("접근 권한이 없습니다, 로그인을 해주세요")
+      next('/login');
+    }
+  }
+},
+{
+  path: "/writinguser/:id/:name",
+  name: "writingUser",
+ components: {
+    header: NavBar,
+    contents: WritingUserVue,
+    footer: FooterBar,
+  },
+  beforeEnter: (to,from,next)=>{
+    if(localStorage.getItem('user')!=null){
+      next();  
+    }else{
+     
+      alert("접근 권한이 없습니다, 로그인을 해주세요")
+      next('/login');
+    }
+  }
 },
 
  

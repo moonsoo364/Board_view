@@ -77,9 +77,9 @@ import axios from 'axios'
             username:this.username_data,
             password:this.password_data
           }).then((res)=>{
-            console.log(res.data);
+          console.log(res.data);
           alert("로그인 성공!");
-           router.push('/');
+          router.push('/');
 
           this.$store.dispatch('asyncToken',{
             username:this.username_data,

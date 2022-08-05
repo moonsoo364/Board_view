@@ -70,7 +70,6 @@ import axios from 'axios'
                     alert("게시글이 등록되었습니다!");
                 }).catch((e)=>{
                     console.log(e);
-                    alert("403: 로그인 토큰 인증이 필요합니다.")
                 })
             }
            

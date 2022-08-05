@@ -6,7 +6,7 @@
             <div v-if="getBoardList">
                 <h3 style="text-align:center;">게시판 페이지입니다!</h3>
                 <b-card-group deck>
-                    <b-card    :title="board.title" v-for="board in getBoardList" :key="board.id">
+                    <b-card   :title="board.title" v-for="board in getBoardList" :key="board.id">
                         <router-link :to="{name:'detail', params:{id:board.id}}" tag="button" class="detailBoard">글보기</router-link>
                         <!-- <b-button @click="showWriting" variant="outline-success">글보기</b-button> -->
                     </b-card>  
@@ -52,7 +52,7 @@ store.state.maxPage=3;
 axios.post("api/noAuth/getBoard",{
 
 }).then(function(res){
-    console.log(res);
+    console.log(res.data);
     store.commit('commitBoardList',res.data);
 
 }).catch(function(err){
