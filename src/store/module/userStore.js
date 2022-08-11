@@ -171,7 +171,8 @@ export const userStore=({
       state.isExitedPw=!state.isExitedPw;
       console.log(state.isExitedPw);
     },
-    },
+   
+  },
     
   actions:{
     userJoin: function(state,payload){
@@ -183,7 +184,7 @@ export const userStore=({
       }).then(function(res){
         console.log(res.data);
         console.log(authAxios);
-        alert("회원가입 성공 !")
+        alert("회원가입 성공 !");
         router.push('/')
       }).catch((err)=>{
          console.log(err);
