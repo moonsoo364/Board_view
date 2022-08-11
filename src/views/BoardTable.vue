@@ -4,23 +4,25 @@
     
     <b-container fluid="md" style="margin-top:2rem; margin-bottom:2rem;">  
             <div v-if="getBoardList">
-                <h3 style="text-align:center;">게시판 페이지입니다!</h3>
+                <h3 style="text-align:center;">{{getMaxPage/3}}/{{lastPage}} 페이지입니다!</h3>
                 <b-card-group deck>
-                    <b-card   :title="board.title" v-for="board in getBoardList" :key="board.id">
+                   
+                    <b-card  :title="board.title" v-for="board in getBoardList" :key="board.id">
                         <router-link :to="{name:'detail', params:{id:board.id}}" tag="button" class="detailBoard">글보기</router-link>
                         <!-- <b-button @click="showWriting" variant="outline-success">글보기</b-button> -->
                     </b-card>  
                 </b-card-group>
                 <div style="text-align:right">
-                    <b-button variant="outline-primary" @click="decrease" v-if="getPre">이전 글</b-button>
-                    <b-button variant="outline-primary" @click="increase" v-if="getNext">다음 글</b-button>
+                    <button @click="goFirstPage" class="btn btn-outline-success">처음으로</button>
+                    <button class="btn btn-outline-primary" @click="decrease" v-if="getPre">이전 글</button>
+                    <button class="btn btn-outline-primary" @click="increase" v-if="getNext">다음 글</button>
                 </div>
                        
             </div>
             <div v-else >
                 <h3 style="text-align:center;" >등록된 게시물이 없습니다.</h3> 
             </div>
-            <router-link v-if="LoginState" to="/create" tag="button" class="createBoard">글작성</router-link>
+            <router-link v-if="getLoginState" to="/create" tag="button" class="createBoard">글작성</router-link>
             
     </b-container>
     
@@ -29,8 +31,7 @@
 
 </template>
 <script>
-import axios from 'axios';
-import { mapGetters } from 'vuex';
+import { mapGetters, mapMutations } from 'vuex';
 
 /* eslint-disable */
 
@@ -38,45 +39,18 @@ import { mapGetters } from 'vuex';
 export default {
 name:"BoardTable",
 computed:{
-    ...mapGetters(['getBoardList','getNext','getPre']), 
-   LoginState(){
-    //로그인 되면 글 등록 버튼 보임
-    return this.$store.getters.getLoginState;
-   }
+    ...mapGetters(['getBoardList','getNext','getPre','getLoginState','getMaxPage']), 
+    lastPage:function(){
+        return (JSON.parse(localStorage.getItem('board')).length/3)+1;
+    }
 },
 mounted(){
-const store =this.$store;
-store.state.visiablePre=false;
-store.state.maxPage=3;
-
-axios.post("api/noAuth/getBoard",{
-
-}).then(function(res){
-    console.log(res.data);
-    store.commit('commitBoardList',res.data);
-
-}).catch(function(err){
-    console.log(err);
-    
-})
-
+    this.$store.dispatch('selectBoard');
 },
-
-
 methods:{
-    increase:function(){
-        return this.$store.commit('increase');
-    },
-    decrease:function(){
-      
-      return this.$store.commit('decrease');
-    },
-
+    ...mapMutations(['increase','decrease','goFirstPage'])
 },
 
-
-
- 
 }
 </script>
 <style scoped>

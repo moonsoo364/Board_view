@@ -14,7 +14,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { mapGetters } from 'vuex';
     
 
@@ -25,12 +24,7 @@ export default {
         ...mapGetters(['getWritingList']),
     },
     mounted(){
-        const token= localStorage.getItem('user')!=null ? JSON.parse(localStorage.getItem('user')).token :null;
-        const store =this.$store;
-         console.log(this.$store);
-        const instance=axios.create({
-            headers:{Authorization : token}
-        });
+       
         const router =this.$router
         const admin=JSON.parse(localStorage.getItem('user')).isAdmin;
 
@@ -38,14 +32,7 @@ export default {
             alert("관리자 권한이 없습니다!");
             router.push("/");
         }else{
-            instance.post("/api/admin/writingUser",{id:this.id
-            }).then((res)=>{
-                console.log(res);
-                store.commit('selectWritingList',res.data);
-                console.log(store.getters.getWritingList);
-            }).catch((err)=>{
-                console.log(err);
-            })
+            this.$store.dispatch("selectUserWriting",this.id);
         }
 
     },
@@ -89,27 +76,10 @@ export default {
         this.$router.push("/userinfo");
         },
         deleteWriting:function(param){
-            const token= localStorage.getItem('user')!=null ? JSON.parse(localStorage.getItem('user')).token :null;
-            const store =this.$store;
-            const router=this.$router;
-           
-            const instance=axios.create({
-                headers:{Authorization : token}
-            });
             if(confirm("정말 "+param.num+"번 글을 삭제하시겠습니까?"))
-            instance.post("/api/auth/deleteBoard",{id:param.num
-            }).then((res)=>{
-                console.log(res);
-                store.state.isDeleteBoard=true;
-                console.log(store.state.isDeleteBoard);
-                alert('해당 유저의 게시글이 삭제 되었습니다!');
-                router.go(-1);
-                router.push({name:"userinfo"});
-
-            }).catch((err)=>{
-                alert('505: 내부 서버 에러');
-                console.log(err);
-            })
+           {
+            this.$store.dispatch('deleteBoardById',param.num)
+           }
             
         }
     }

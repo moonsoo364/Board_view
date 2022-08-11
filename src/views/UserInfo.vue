@@ -19,7 +19,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { mapGetters } from 'vuex';
   
 export default {
@@ -29,24 +28,15 @@ export default {
 
   },
   mounted(){
-    const store= this.$store;
-    const token =JSON.parse(localStorage.getItem('user')).token
-    const router=this.$router
-    const instance=axios.create({
-      headers:{Authorization:token}
-    })
+
     if(JSON.parse(localStorage.getItem('user')).isAdmin)
     {
-      instance.post('/api/admin/userInfo')
-      .then((res)=>{console.log(res);
-        store.commit('setUserList',res.data);
-      })
-      .catch((err)=>{console.log(err);})
+      this.$store.commit('setUserList');
 
     }
     else{
       alert("관리자 계정이 아닙니다!")
-      router.push('/');
+      this.$router.push('/');
     }
   },
   data() {
@@ -70,7 +60,7 @@ export default {
         },
          {
           label: "Date",
-          field: "date",
+          field: "createDate",
 
         },
          {

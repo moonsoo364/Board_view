@@ -7,9 +7,9 @@
       
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">User ID</label>
-      <button style="margin:0 0 0 1rem;" variant="success" @click="checkName" :class="[checker ? 'btn btn-outline-success':'btn btn-outline-danger']">중복확인</button>
-      <button v-if="checker" @click="inverseCheker" class="btn btn-outline-warning">ID수정</button>
-      <b-form-input  :disabled="checker" v-model="username_data" :state="checkUserId" id="feedback-user"></b-form-input>
+      <button style="margin:0 0 0 1rem;" @click="checkName" :class="[getNoOverLapId ? 'btn btn-outline-success':'btn btn-outline-danger']">중복확인</button>
+      <button v-if="getNoOverLapId" @click="inverseOverlap" class="btn btn-outline-warning">ID수정</button>
+      <b-form-input  :disabled="getNoOverLapId" v-model="user.username" :state="checkUserId" id="feedback-user"></b-form-input>
       
       <b-form-invalid-feedback :state="checkUserId">
         사용자 ID는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
@@ -21,7 +21,7 @@
 
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">비밀번호</label>
-      <b-form-input type="password" v-model="password_data" :state="checkUserPw" id="feedback-user"></b-form-input>
+      <b-form-input type="password" v-model="user.password" :state="checkUserPw" id="feedback-user"></b-form-input>
       <b-form-invalid-feedback :state="checkUserPw">
         비밀번호는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
       </b-form-invalid-feedback>
@@ -42,7 +42,7 @@
 
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">이메일</label>
-      <b-form-input v-model="email_data" :state="checkUserEm" id="feedback-user"></b-form-input>
+      <b-form-input v-model="user.email" :state="checkUserEm" id="feedback-user"></b-form-input>
       <b-form-invalid-feedback :state="checkUserEm">
         email@exmaple.com 양식으로 작성해주세요.
       </b-form-invalid-feedback>
@@ -51,29 +51,23 @@
       </b-form-valid-feedback>
      </b-form>
       
-    <b-form-select size="sm" v-model="selected" :options="options"></b-form-select>   
-    <div v-if="selected" class="mb-3" style="font-size: 0.875em;">선택한 계정: <strong>{{ selected }}</strong></div>
+    <b-form-select size="sm" v-model="user.role" :options="options"></b-form-select>   
+    <div v-if="user.role" class="mb-3" style="font-size: 0.875em;">선택한 계정: <strong>{{ user.role }}</strong></div>
     <div v-else class="mb-3" style="font-size: 0.875em;"><span style="color:#dc3545;">계정을 선택 해주세요!</span></div>
     </b-form>
-     <b-button @click="fetchData" variant="primary">Submit</b-button>
+     <b-button @click="joinUser" variant="primary">Submit</b-button>
 </b-container>
 
 </div>
 </template>
 
 <script>
-/* eslint-disable */
-
-import axios from 'axios'
+import { mapGetters } from 'vuex';
   export default {
     data() {
       return {
-        username_data:"",
-        password_data:"",
         password_check:"",
-        email_data:"",
-        checker:false,
-        selected: null,
+        user:{username:'',password:'',email:'',role:''},
         options: [
           { value: 'ADMIN', text: 'Admin' },
           { value: 'USER', text: 'User' },
@@ -83,11 +77,12 @@ import axios from 'axios'
       }
     },
     computed:{
+      ...mapGetters(['getNoOverLapId']),
       checkUserId(){
 
-        if(this.username_data !== undefined){
+        if(this.user.username !== undefined){
           const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,12}$/;
-          if (this.username_data.match(reg)){
+          if (this.user.username.match(reg)){
             return true;
           }
         }
@@ -95,89 +90,47 @@ import axios from 'axios'
       },
       checkUserPw(){
 
-        if(this.password_data !== undefined){
+        if(this.user.password !== undefined){
           const reg =/^[a-zA-Z]+[a-zA-Z0-9]{5,12}$/;
-          if (this.password_data.match(reg)){
+          if (this.user.password.match(reg)){
             return true;
           }
         }
         return false
       },
       checkUserEm(){
-        //eslint-disable-next-line no-useless-escape
-        //(\.){1}([A-z]){2,3}(\.)?(?(5)[A-z]{1,3}|\b)
        const reg=/^([A-z1-9]){6,12}@([A-z]){3,8}(\.){1}([A-z]){2,3}(\.)?((5)?[A-z]{1,3}|\b)$/;
 
-       if(this.email_data.match(reg)){
+       if(this.user.email.match(reg)){
         return true;
        }
         return false 
       },
       reCheckPW(){
-       if(this.password_data === this.password_check){
+       if(this.user.password === this.password_check){
         return true
        }
         return false 
       }
     },
-    methods:{
-      
-      fetchData: function(){
-        const router=this.$router;
-        console.log(this);
-      if(!this.checker){
+    methods:{    
+      joinUser: function(){
+      if(!this.getNoOverLapId){
         alert('중복 확인을 해주세요!')
-      }else if(this.selected&&this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
-        axios.post('/api/noAuth/joinProc',{
-          username:this.username_data,
-          password:this.password_data,
-          email:this.email_data,
-          roles:this.selected
-          
-        }).then(function(res){
-
-          alert("회원가입 성공 !")
-          //익명함수 내에서 this가 객체를 가르키지 않음.
-          console.log("function : "+this)
-          router.push('/')
-
-          }).catch((e)=>{
-             console.log(e);
-             alert("회원가입 실패 !")
-   
-          })
+      }else if(this.user.role&&this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
+        this.$store.dispatch('userJoin',this.user);
       }else{
         alert("유효한 정보를 입력하세요!")
       }
     },
     checkName: function(){
-
-      if(this.checkUserId){
-        const instance =this
-        axios.post('api/noAuth/checkName',{
-          username:this.username_data
-        }).then(function(res){
-          
-          alert("사용가능한 아이디입니다.");
-          console.log(res);
-          instance.checker=true;
-        }).catch((e)=>{
-          console.log(e);
-
-          alert("아이디가 중복 되었습니다.")
-        })
-
-      }else{
-        alert("아이디를 먼저 입력하세요!")
-      }
-
+      this.$store.commit('overlapCheckId',this.user.username);
     },
-    inverseCheker:function(){
-      this.checker =!this.checker;
+    inverseOverlap:function(){
+      this.$store.commit("inverseOverlapId")
     }
   }
   }
-  
 </script>
 <style scoped>
 

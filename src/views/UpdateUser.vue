@@ -5,11 +5,11 @@
     <b-form>
       <h3 style="text-align:center;">유저이름 : {{paramName}}</h3>
        <button @click="behind" class="btn btn-outline-primary">뒤로</button>
-       <button @click.prevent="existedPassword" :class="[existedPw ? 'btn btn-outline-success':'btn btn-outline-danger']">비밀번호 중복확인</button>
-       <button @click.prevent="inverseChkPw" v-if="existedPw" class="btn btn-outline-warning">비밀번호 변경</button>   
+       <button @click.prevent="existedPassword" :class="[getIsExistedPw ? 'btn btn-outline-success':'btn btn-outline-danger']">비밀번호 중복확인</button>
+       <button @click.prevent="inversePw" v-if="getIsExistedPw" class="btn btn-outline-warning">비밀번호 변경</button>   
       <b-form  @submit.stop.prevent>
       <label for="feedback-user">비밀번호</label>
-      <b-form-input :disabled="existedPw" type="password" v-model="password_data" :state="checkUserPw" id="feedback-user"></b-form-input>
+      <b-form-input :disabled="getIsExistedPw" type="password" v-model="password_data" :state="checkUserPw" id="feedback-user"></b-form-input>
       <b-form-invalid-feedback :state="checkUserPw">
         비밀번호는 6자 이상 12자 이하로 작성해주세요.(영어,숫자만가능)
       </b-form-invalid-feedback>
@@ -43,38 +43,29 @@
    
     
     </b-form>
-     <b-button @click.prevent="fetchData" variant="primary">Submit</b-button>
+     <b-button @click.prevent="updateUser" variant="primary">Submit</b-button>
 </b-container>
 
 </div>
 </template>
 
 <script>
-/* eslint-disable */
 
-import axios from 'axios'
 import { mapGetters } from 'vuex';
-const token= localStorage.getItem('user')!=null ? JSON.parse(localStorage.getItem('user')).token : null;
-const instance =axios.create({
-    headers:{Authorization:token}
-})
   export default {
-    mounted(){
-        const param=this.$route.params.id;
-    },  
+
     data() {
       return {
         password_data:"",
         password_check:"",
         email_data:"",
-        existedPw:false,
         param:this.$route.params.id,
         paramName:this.$route.params.name,
 
       }
     },
     computed:{
-      ...mapGetters(['']),
+      ...mapGetters(['getIsExistedPw']),
 
       checkUserPw(){
         
@@ -103,51 +94,32 @@ const instance =axios.create({
     },
     methods:{
       
-    fetchData: function(){
-      const router=this.$router;
-        if(!this.existedPw){
-            alert("비밀번호 중복확인을 해주세요!");
-        }else if(this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
-          instance.post('/api/admin/userUpdate',{
+    updateUser: function(){
+
+      if(!this.getIsExistedPw){
+          alert("비밀번호 중복확인을 해주세요!");
+      }else if(this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
+        this.$store.commit("updateUser",{
             password:this.password_data,
             email:this.email_data,
             id:this.param
-          }).then(function(res){  
-          alert("회원 정보 수정완료!")
-            router.push("/userinfo");
-         }).catch((e)=>{
-              console.log(e);
-              alert("회원가입 실패 !")
-
-         })
+        });    
       }else{
           alert("유효한 정보를 입력하세요!")
       }
     },
-    existedPassword:function(msg,event){
+    existedPassword:function(){
         if(this.checkUserPw){
-            instance.post('/api/admin/existedPassword',{password:this.password_data,id:this.param})
-            .then((res)=>{
-                console.log(res.data);
-                if(res.data){
-                  alert("이미 사용하고 있는 비밀번호입니다.");
-                }else{
-                  alert("사용가능한 비밀번호입니다.");
-                  this.existedPw=true;
-                }
-                
-            }).catch(function(err){
-                alert("JWT이 제대로인식이 안됩니다!")
-                this.existedPw=false;
-                console.log(err);
-            })
-           
+          this.$store.commit('existedPassword',{
+            password:this.password_data,
+            id:this.param,
+          });
         }else{
-            alert("비밀번호을 제대로 입력하세요!");
+          alert("비밀번호을 제대로 입력하세요!");
         }
     },
-    inverseChkPw:function(){
-      this.existedPw= !this.existedPw;
+    inversePw:function(){
+      this.$store.commit('togleExitedPw')
     },  
     behind:function() {
         this.$router.push("/userinfo");

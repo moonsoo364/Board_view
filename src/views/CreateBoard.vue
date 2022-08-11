@@ -2,7 +2,7 @@
   <div>
     <b-container fluid="md" style="margin-top:2rem; margin-bottom:2rem;">
         <h3 style="text-align:center;">게시글작성 페이지입니다!</h3>
-        <div>작성자 <input type="text" v-model="getUsername" disabled></div>
+        <div>작성자 <input type="text" v-model="getUserData.username" disabled></div>
     <b-input-group prepend="제목" class="mt-3">
         <b-form-input v-model="title"> </b-form-input>
     </b-input-group>
@@ -15,7 +15,7 @@
     ></b-form-textarea>
 
     <div>
-        <button class="createCommit" @click="fetchData">글등록</button>
+        <button class="createCommit" @click="insertBoard">글등록</button>
         <router-link to="/" tag="button" class="list">목록</router-link>
     </div>
     </b-container>
@@ -23,8 +23,7 @@
 </template>
 
 <script>
-import axios from 'axios'
-
+import { mapGetters } from 'vuex'
 
     export default {
         data(){
@@ -35,42 +34,28 @@ import axios from 'axios'
             }
         },
          updated(){
-            if(this.getUsername==''){
+            if(this.getUserData.username==''){
                 alert("게시글 접근 불가!")
                 this.$router.push('/')
             }
          },
         computed:{
-            getUsername(){
-            return this.$store.getters.getUsername;      
-            },
+            ...mapGetters(['getUserData'])
 
             
         },
         methods:{
-           fetchData(){
-            const router = this.$router;
-            const token =JSON.parse(localStorage.getItem('user')).token
-            console.log(token);
-            const instance =axios.create({
-                headers:{Authorization:token}
-            })
+           insertBoard(){
             if((this.title=='')){
                  alert('제목이 비었습니다!')
                
             }else if(this.content==''){
                 alert('게시글 내용이 없습니다!')
             }else{
-                instance.post('api/auth/insertBoard',{
-                    content:this.content,
+                this.$store.dispatch('insertBoard',{
                     title:this.title,
-                }).then(function(res){
-                    console.log(res);
-                    router.push('/');
-                    alert("게시글이 등록되었습니다!");
-                }).catch((e)=>{
-                    console.log(e);
-                })
+                    content:this.content,
+                    });
             }
            
            
