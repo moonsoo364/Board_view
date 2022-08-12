@@ -4,9 +4,11 @@
     <button @click="behind" class="btn btn-outline-primary">뒤로</button>
     <vue-good-table :columns="columns" :rows = "getWritingList" >
         <template slot="table-row" slot-scope="prop">
-            <span v-if="prop.column.field ==='delete'">
-                <button @click="deleteWriting({num:prop.row.id, user:id})" class="btn btn-outline-danger">글삭제</button>
+
+            <span v-if="prop.column.field === 'writing'">
+                <router-link :to="{name:'detail',params:{id:prop.row.id}}" tag="button" class="btn btn-outline-success">글보기</router-link>
             </span>
+
             <span v-else>{{prop.formattedRow[prop.column.field]}}</span>
         </template>
     </vue-good-table>
@@ -62,9 +64,9 @@ export default {
                     field:"username",
                 },
                 {
-                    label:"Delete",
-                    field:"delete"
-                }
+                    label: "Writing",
+                    field: "writing"
+                },
             ],
 
        
@@ -86,6 +88,9 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
+.btn{
+    padding:0.4rem;
+}
 </style>
+

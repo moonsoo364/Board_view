@@ -26,12 +26,13 @@
             
     </b-container>
     
-    
+
 </div>
 
 </template>
 <script>
 import { mapGetters, mapMutations } from 'vuex';
+
 
 /* eslint-disable */
 
@@ -41,7 +42,7 @@ name:"BoardTable",
 computed:{
     ...mapGetters(['getBoardList','getNext','getPre','getLoginState','getMaxPage']), 
     lastPage:function(){
-        return (JSON.parse(localStorage.getItem('board')).length/3)+1;
+        return parseInt(JSON.parse(localStorage.getItem('board')).length/3)+1;
     }
 },
 mounted(){

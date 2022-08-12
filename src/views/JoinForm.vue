@@ -51,7 +51,7 @@
       </b-form-valid-feedback>
      </b-form>
       
-    <b-form-select size="sm" v-model="user.role" :options="options"></b-form-select>   
+    <b-form-select style="margin: 1rem 0 1rem 0;" size="sm" v-model="user.role" :options="options"></b-form-select>   
     <div v-if="user.role" class="mb-3" style="font-size: 0.875em;">선택한 계정: <strong>{{ user.role }}</strong></div>
     <div v-else class="mb-3" style="font-size: 0.875em;"><span style="color:#dc3545;">계정을 선택 해주세요!</span></div>
     </b-form>
@@ -119,6 +119,8 @@ import { mapGetters } from 'vuex';
         alert('중복 확인을 해주세요!')
       }else if(this.user.role&&this.checkUserId&&this.checkUserPw&&this.checkUserEm&&this.reCheckPW){
         this.$store.dispatch('userJoin',this.user);
+        this.$store.commit("inverseOverlapId")
+
       }else{
         alert("유효한 정보를 입력하세요!")
       }

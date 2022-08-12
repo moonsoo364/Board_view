@@ -10,10 +10,19 @@ import "vue-good-table/dist/vue-good-table.css"
 import { BootstrapVue, IconsPlugin, VBHover } from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
-//axios
+//vue2-editor : 글쓰기 에디터 라이브러리
+import Vue2Editor from "vue2-editor"
+//@carbon/bue : file upload 라이브러리
+import CarbonComponentVue from "@carbon/vue";
+import CarbonCss from "carbon-components/css/carbon-components.min.css";
 
+
+
+Vue.use(CarbonCss);
+Vue.use(CarbonComponentVue);
 Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
+Vue.use(Vue2Editor)
 Vue.directive('b-hover', VBHover)
 Vue.use(VueGoodTablePlugin)
 

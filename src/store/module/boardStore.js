@@ -11,8 +11,10 @@ export const  boardStore=({
     visiableNext:true,
     visiablePre:false,
     isWriter:false,
-    BoardData:{title:'',content:'',username:'',correctUser:false,id:0},
+    BoardData:{title:'',content:'',username:'',correctUser:false,id:0,filename:[]},
     writingList:[],
+    uploadFileOK:false,
+    loadingBoardOK:false,
 
 
   },
@@ -39,6 +41,13 @@ export const  boardStore=({
     getWritingList:function(state){
       return state.writingList;
     },
+    getUploadFileOK(state){
+        return state.uploadFileOK;
+    },
+    getLoadBoardOK(state){
+      return state.loadingBoardOK;
+    }
+
   },
   mutations:{
   
@@ -124,20 +133,30 @@ export const  boardStore=({
       // console.log(arr);
     },
     selectByBoardId:function(state,payload){
-        
-        state.BoardData=payload;
-        state.BoardData.correctUser =JSON.parse(localStorage.getItem('user')).username==payload.username;
-        console.log(state.BoardData);
+        authAxios
+          .post("/auth/board_detail",{id:payload})
+          .then((res)=>{
+            state.BoardData=res.data;
+            state.BoardData.correctUser =JSON.parse(localStorage.getItem('user')).username==res.data.username;
+            console.log(res.data);
+      
+          })
+          .catch((err)=>{console.log(err);})
+       console.log(state.BoardData);
 
     },
     selectWritingList:function(state,payload){
       state.writingList=payload;
       state.writingList=[];
       for(let i=0;i<payload.length;i++){
+        let sliceContent =payload[i].content.length>100
+        ?payload[i].content.split('</')[0]+"..."
+        :payload[i].content;
+
         state.writingList.push({
         id : payload[i].id,
         title : payload[i].title,
-        content : payload[i].content,
+        content : sliceContent,
         date : moment(payload[i].createTime).format("yyyy/MM/DD h:mm:ss a"),
         username : payload[i].username, 
       })
@@ -159,12 +178,13 @@ export const  boardStore=({
             alert("게시물 삭제 불가!")
         })
     },
-    updateBoard:function(state){
+    updateBoard:function(state,payload){
         console.log(state.BoardData.id);
         authAxios.post('/auth/board_update',{
             id:state.BoardData.id,
             title:state.BoardData.title,
             content:state.BoardData.content,
+            filename:payload,
         }).then(function(res){
             console.log(res);
             router.push('/');
@@ -173,7 +193,61 @@ export const  boardStore=({
             console.log(e);
             alert("게시물 수정 불가!")
         })
-    }
+    },
+    setFileUploadFalse:function(state){
+        console.log(state.uploadFileOK);
+        state.uploadFileOK = false;
+
+    },
+    submitFiles:function(state,payload){
+        authAxios.post("/auth/file_submit",payload,{
+            headers:{
+                "Content-Type": "multipart/form-data",
+            }
+        })
+        .then((res)=>{
+          console.log(res);
+          if(res.data){
+            state.uploadFileOK =true;
+          }else{
+            state.uploadFileOK =false;
+          }
+         })
+        .catch((err)=>{
+            console.log(err);
+            if(err.code === "ERR_NETWORK"){
+                alert("파일 용량을 10MB 미만으로 업로드해주세요!");
+            }
+        })
+    },
+    downloadFile(state,payload){
+        console.log(payload);
+        authAxios.post('/auth/download',payload,{responseType: "blob"})
+        .then((res)=>{
+            console.log(res);
+            const url =window.URL.createObjectURL(new Blob([res.data]));
+            const link =document.createElement('a');
+            link.href=url;
+            link.setAttribute('download',payload);
+            document.body.appendChild(link);
+            link.click();
+        })
+        .catch((err)=>{
+            console.log(err);
+        })
+    },
+    loadedBoard(state,payload){
+      
+      state.BoardData=payload;
+      state.BoardData.correctUser =JSON.parse(localStorage.getItem('user')).username==payload.username;
+      state.loadingBoardOK=true;
+    },
+    loadBoardOK(state){
+      state.loadingBoardOK =true;
+    },
+    loadBoardNO(state){
+      state.loadingBoardOK =false;
+    }   
     
     },
     
@@ -194,10 +268,11 @@ export const  boardStore=({
         })
     },
     insertBoard:function(state,payload){
-        console.log(payload);
+
         authAxios.post('/auth/board_insert',{
             title:payload.title,
             content:payload.content,
+            filename:payload.filename,
         }).then(function(res){
             console.log(res);
             router.push('/');
@@ -205,17 +280,6 @@ export const  boardStore=({
         }).catch((e)=>{
             console.log(e);
         })
-    },
-    selectDetail: function(state,payload){
-        console.log(payload);
-        authAxios
-          .post("/auth/board_detail",{id:payload})
-          .then((res)=>{
-            console.log(res.data);
-            state.commit('selectByBoardId',res.data);
-      
-          })
-          .catch((err)=>{console.log(err);})
     },
     selectUserWriting:function(state,payload){
         authAxios.post("/admin/user_writing",{id:payload
@@ -238,7 +302,21 @@ export const  boardStore=({
             alert('게시물 삭제가 거부됬습니다!');
             console.log(err);
         })
-    }    
+    },
+      loadBoard: function(state,payload){
+        state.commit('loadBoardNO');
+
+
+        console.log(payload);
+        authAxios
+          .post("/auth/board_detail",{id:payload})
+          .then((res)=>{
+            console.log(res.data);
+            setTimeout(function(){state.commit('loadedBoard',res.data)},1000);
+          })
+          .catch((err)=>{console.log(err);})
+
+    },    
   },
   
 
