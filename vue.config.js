@@ -8,7 +8,7 @@ module.exports = defineConfig({
     proxy:{
       '/api':{
         target,
-        changeOrigin: true//cross origin 허용
+        //changeOrigin: true//cross origin 허용
       },
       
     }

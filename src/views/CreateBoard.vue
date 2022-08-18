@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from 'vuex'
+import { mapGetters } from 'vuex'
 import { VueEditor } from 'vue2-editor'
 // import axios from 'axios'
 
@@ -66,8 +66,8 @@ import { VueEditor } from 'vue2-editor'
             
         },
         methods:{
-            ...mapMutations(['setFileUploadFalse']),
             setFileUploadFalse(){
+                this.deltaFile=[];
                 this.fileSize=0;
                 this.fileCapacity='0B';
                 this.$store.commit('setFileUploadFalse');
@@ -81,6 +81,7 @@ import { VueEditor } from 'vue2-editor'
                 alert("업로드를 먼저 해주세요.")
             
             }else{
+                this.filename=[]
                 this.deltaFile.forEach(i=>{this.filename.push(i.file.name)});
                 console.log(this.filename);
                 this.$store.dispatch('insertBoard',{
@@ -112,6 +113,7 @@ import { VueEditor } from 'vue2-editor'
                 this.deltaFile.forEach(element=>{
                     formData.append('fileList',element.file);
                 })
+                
                 this.$store.commit('submitFiles',formData);
    
             },
